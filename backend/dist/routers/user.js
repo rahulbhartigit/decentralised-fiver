@@ -11,15 +11,12 @@ const __1 = require("..");
 const middlware_1 = require("../middlware");
 const s3_presigned_post_1 = require("@aws-sdk/s3-presigned-post");
 const types_1 = require("../types");
+const worker_1 = require("./worker");
 const DEFAULT_TITLE = "Select the most clickable thumbnail";
-//@ts-ignore
-const ACCESSKEYID = process.env.ACCESS_KEY_ID;
-//@ts-ignore
-const SECRETACCESSKEY = process.env.SECRET_ACCESS_KEY;
 const s3Client = new client_s3_1.S3Client({
     credentials: {
-        accessKeyId: ACCESSKEYID,
-        secretAccessKey: SECRETACCESSKEY,
+        accessKeyId: process.env.ACCESS_KEY_ID ?? "",
+        secretAccessKey: process.env.SECRET_ACCESS_KEY ?? "",
     },
     region: "us-east-1",
 });
@@ -81,7 +78,7 @@ router.post("/task", middlware_1.authMiddleware, async (req, res) => {
         const response = await tx.task.create({
             data: {
                 title: parseData.data.title ?? DEFAULT_TITLE,
-                amount: "1",
+                amount: 1 * worker_1.TOTAL_DECIMALS,
                 payment_signature: parseData.data.payment_signature,
                 user_id: userId,
             },
@@ -104,13 +101,9 @@ router.get("/presignedUrl", middlware_1.authMiddleware, async (req, res) => {
     const { url, fields } = await (0, s3_presigned_post_1.createPresignedPost)(s3Client, {
         Bucket: "decenteralised-fiverrr",
         Key: `fiver/${userId}/${Math.random()}/image.jpg`,
-        Conditions: [["content-length-range", 0, 5 * 1024 * 1024]],
-        Fields: {
-            "Content-Type": "image/png",
-        },
+        Conditions: [["content-length-range", 0, 5 * 1024 * 1024]], //5 MB MAX
         Expires: 3600,
     });
-    console.log({ url, fields });
     res.json({
         preSignedUrl: url,
         fields,

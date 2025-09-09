@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
@@ -7,16 +7,14 @@ import { jwtSecret } from "..";
 import { authMiddleware } from "../middlware";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { createTaskInput } from "../types";
+import { TOTAL_DECIMALS } from "./worker";
 
 const DEFAULT_TITLE = "Select the most clickable thumbnail";
-//@ts-ignore
-const ACCESSKEYID: string = process.env.ACCESS_KEY_ID;
-//@ts-ignore
-const SECRETACCESSKEY: string = process.env.SECRET_ACCESS_KEY;
+
 const s3Client = new S3Client({
   credentials: {
-    accessKeyId: ACCESSKEYID,
-    secretAccessKey: SECRETACCESSKEY,
+    accessKeyId: process.env.ACCESS_KEY_ID ?? "",
+    secretAccessKey: process.env.SECRET_ACCESS_KEY ?? "",
   },
   region: "us-east-1",
 });
@@ -97,7 +95,7 @@ router.post("/task", authMiddleware, async (req, res) => {
     const response = await tx.task.create({
       data: {
         title: parseData.data.title ?? DEFAULT_TITLE,
-        amount: "1",
+        amount: 1 * TOTAL_DECIMALS,
         payment_signature: parseData.data.payment_signature,
         user_id: userId,
       },
@@ -122,13 +120,10 @@ router.get("/presignedUrl", authMiddleware, async (req, res) => {
   const { url, fields } = await createPresignedPost(s3Client, {
     Bucket: "decenteralised-fiverrr",
     Key: `fiver/${userId}/${Math.random()}/image.jpg`,
-    Conditions: [["content-length-range", 0, 5 * 1024 * 1024]],
-    Fields: {
-      "Content-Type": "image/png",
-    },
+    Conditions: [["content-length-range", 0, 5 * 1024 * 1024]], //5 MB MAX
     Expires: 3600,
   });
-  console.log({ url, fields });
+
   res.json({
     preSignedUrl: url,
     fields,
@@ -161,7 +156,7 @@ router.post("/signin", async (req, res) => {
       {
         userId: user.id,
       },
-      
+
       jwtSecret
     );
     res.json({ token });

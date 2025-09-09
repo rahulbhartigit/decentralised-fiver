@@ -8,9 +8,15 @@ const express_1 = __importDefault(require("express"));
 const user_1 = __importDefault(require("./routers/user"));
 const worker_1 = __importDefault(require("./routers/worker"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use(express_1.default.json());
+app.use((0, cors_1.default)({
+    origin: "http://localhost:3001", // frontend origin
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+}));
 exports.jwtSecret = process.env.JWT_SECRET || "default";
 app.use("/v1/user", user_1.default);
 app.use("/v1/worker", worker_1.default);

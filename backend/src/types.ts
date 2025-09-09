@@ -1,4 +1,3 @@
-import { sign } from "jsonwebtoken";
 import z from "zod";
 
 export const createTaskInput = z.object({
@@ -9,4 +8,9 @@ export const createTaskInput = z.object({
   ),
   title: z.string().optional(),
   payment_signature: z.string(),
+});
+
+export const createSubmissionInput = z.object({
+  taskId: z.string(),
+  selection: z.string(),
 });

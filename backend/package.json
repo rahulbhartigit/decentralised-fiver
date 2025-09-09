@@ -14,11 +14,10 @@
     "@aws-sdk/s3-presigned-post": "^3.876.0",
     "@aws-sdk/s3-request-presigner": "^3.876.0",
     "@prisma/client": "^5.22.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-<<<<<<< HEAD
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
-=======
->>>>>>> bcb7050 (first commit)
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "zod": "^4.1.3"

@@ -112,7 +112,7 @@ router.post("/submission", middlware_1.workerMiddleware, async (req, res) => {
         });
     }
     else {
-        res.status(404).json({ message: "error" });
+        res.status(411).json({ message: "Incorrect Inputs" });
     }
 });
 router.post("/signin", async (req, res) => {
@@ -152,7 +152,7 @@ router.get("/nextTask", middlware_1.workerMiddleware, async (req, res) => {
         });
     }
     else {
-        res.status(411).json({
+        res.json({
             task,
         });
     }

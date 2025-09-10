@@ -55,11 +55,11 @@ router.get("/task", authMiddleware, async (req, res) => {
     },
   });
   const result: Record<
-    number,
+    string,
     {
       count: number;
       option: {
-        image_url: string;
+        imageUrl: string;
       };
     }
   > = {};
@@ -68,7 +68,7 @@ router.get("/task", authMiddleware, async (req, res) => {
     result[option.id] = {
       count: 0,
       option: {
-        image_url: option.image_url,
+        imageUrl: option.image_url,
       },
     };
   });
@@ -77,6 +77,7 @@ router.get("/task", authMiddleware, async (req, res) => {
   });
   res.json({
     result,
+    taskDetails,
   });
 });
 

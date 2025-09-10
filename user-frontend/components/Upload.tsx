@@ -23,7 +23,10 @@ export const Upload = () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          Authorization: `Bearer ${
+            localStorage.getItem("token") ||
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc1Njg0NTQzOH0.DGc9AZz2nFVXOwLWw5KtF4mO7qSkKaf0WicwrMxDE4Q"
+          }`,
         },
       }
     );
@@ -70,6 +73,15 @@ export const Upload = () => {
               setImages((i) => [...i, imageUrl]);
             }}
           />
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={onSubmit}
+            type="button"
+            className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+          >
+            Submit Task
+          </button>
         </div>
       </div>
     </div>

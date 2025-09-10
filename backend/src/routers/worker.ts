@@ -122,7 +122,7 @@ router.post("/submission", workerMiddleware, async (req, res) => {
       amount,
     });
   } else {
-    res.status(404).json({ message: "error" });
+    res.status(411).json({ message: "Incorrect Inputs" });
   }
 });
 
@@ -169,7 +169,7 @@ router.get("/nextTask", workerMiddleware, async (req, res) => {
       message: "No more tasks left for you to review",
     });
   } else {
-    res.status(411).json({
+    res.json({
       task,
     });
   }

@@ -18,16 +18,13 @@ export function UploadImage({
     try {
       const response = await axios.get(`${BACKEND_URL}/v1/user/presignedUrl`, {
         headers: {
-          Authorization: `Bearer ${
-            localStorage.getItem("token") ||
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc1Njg0NTQzOH0.DGc9AZz2nFVXOwLWw5KtF4mO7qSkKaf0WicwrMxDE4Q"
-          }`,
+          Authorization: localStorage.getItem("token"),
         },
       });
       const presignedUrl = response.data.preSignedUrl;
-      console.log(presignedUrl);
+      // console.log(presignedUrl);
       const formData = new FormData();
-      console.log(response.data.fields);
+      // console.log(response.data.fields);
       formData.set("bucket", response.data.fields["bucket"]);
       formData.set("X-Amz-Algorithm", response.data.fields["X-Amz-Algorithm"]);
       formData.set(
@@ -43,7 +40,7 @@ export function UploadImage({
 
       const awsResponse = await axios.post(presignedUrl, formData);
 
-      console.log(awsResponse);
+      // console.log(awsResponse);
 
       onImageAdded(`${CLOUDFRONT_URL}/${response.data.fields["key"]}`);
     } catch (e) {

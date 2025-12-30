@@ -12,7 +12,11 @@ const middlware_1 = require("../middlware");
 const s3_presigned_post_1 = require("@aws-sdk/s3-presigned-post");
 const types_1 = require("../types");
 const worker_1 = require("./worker");
+const tweetnacl_1 = __importDefault(require("tweetnacl"));
+const web3_js_1 = require("@solana/web3.js");
 const DEFAULT_TITLE = "Select the most clickable thumbnail";
+const connection = new web3_js_1.Connection(process.env.RPC_URL ?? "");
+const PARENT_WALLET_ADDRESS = "4wRWn5Hr45fQcEdG5zEoy39AEiCNURoYHqKKAiugUP4p";
 const s3Client = new client_s3_1.S3Client({
     credentials: {
         accessKeyId: process.env.ACCESS_KEY_ID ?? "",
@@ -72,8 +76,36 @@ router.post("/task", middlware_1.authMiddleware, async (req, res) => {
     const userId = req.userId;
     const body = req.body;
     const parseData = types_1.createTaskInput.safeParse(body);
+    const user = await prismaClient.user.findFirst({
+        where: {
+            id: userId,
+        },
+    });
     if (!parseData.success) {
         return res.status(411).json({ messsage: "You've sent the wrong inputs" });
+    }
+    const transaction = await connection.getTransaction(parseData.data.payment_signature, {
+        maxSupportedTransactionVersion: 1,
+    });
+    console.log(transaction);
+    if ((transaction?.meta?.postBalances[1] ?? 0) -
+        (transaction?.meta?.preBalances[1] ?? 0) !==
+        100000000) {
+        return res.status(411).json({
+            message: "Transaction signature/amount incorrect",
+        });
+    }
+    if (transaction?.transaction.message.getAccountKeys().get(1)?.toString() !==
+        PARENT_WALLET_ADDRESS) {
+        return res.status(411).json({
+            message: "Transaction sent to wrong address",
+        });
+    }
+    if (transaction?.transaction.message.getAccountKeys().get(0)?.toString() !==
+        user?.address) {
+        return res.status(411).json({
+            message: "Transaction sent to wrong address",
+        });
     }
     let response = await prismaClient.$transaction(async (tx) => {
         const response = await tx.task.create({
@@ -111,10 +143,14 @@ router.get("/presignedUrl", middlware_1.authMiddleware, async (req, res) => {
     });
 });
 router.post("/signin", async (req, res) => {
-    const hardCodedWalletAddress = "4wRWn5Hr45fQcEdG5zEoy39AEiCNURoYHqKKAiugUP4p";
+    const { publicKey, signature } = req.body;
+    const signedString = "Sign into the matrix of labelling";
+    const message = new TextEncoder().encode("Sign into the matrix of labelling");
+    const result = tweetnacl_1.default.sign.detached.verify(message, new Uint8Array(signature.data), new web3_js_1.PublicKey(publicKey).toBytes());
+    console.log(result);
     const existingUser = await prismaClient.user.findFirst({
         where: {
-            address: hardCodedWalletAddress,
+            address: publicKey,
         },
     });
     if (existingUser) {
@@ -126,7 +162,7 @@ router.post("/signin", async (req, res) => {
     else {
         const user = await prismaClient.user.create({
             data: {
-                address: hardCodedWalletAddress,
+                address: publicKey,
             },
         });
         const token = jsonwebtoken_1.default.sign({

@@ -23,7 +23,10 @@ export const NextTask = () => {
     axios
       .get(`${BACKEND_URL}/v1/worker/nextTask`, {
         headers: {
-          Authorization: localStorage.getItem("token"),
+          Authorization: `Bearer ${
+            localStorage.getItem("token") ||
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1Nzc4MDQ5OH0.ZQv0-gcKlSsfAXu3Uf9PplVPCcpJTO_VpedE7Jx-PXE"
+          }`,
         },
       })
       .then((res) => {
@@ -75,7 +78,10 @@ export const NextTask = () => {
                   },
                   {
                     headers: {
-                      Authorization: localStorage.getItem("token"),
+                      Authorization: `Bearer ${
+                        localStorage.getItem("token") ||
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1Nzc4MDQ5OH0.ZQv0-gcKlSsfAXu3Uf9PplVPCcpJTO_VpedE7Jx-PXE"
+                      }`,
                     },
                   }
                 );

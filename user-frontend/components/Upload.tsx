@@ -4,11 +4,16 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UploadImage } from "./UploadImage";
+import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 
 export const Upload = () => {
   const [images, setImages] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [txSignature, setTxSignature] = useState("");
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
+
   const router = useRouter();
 
   async function onSubmit() {
@@ -23,14 +28,37 @@ export const Upload = () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${
-            localStorage.getItem("token") ||
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc1Njg0NTQzOH0.DGc9AZz2nFVXOwLWw5KtF4mO7qSkKaf0WicwrMxDE4Q"
-          }`,
+          Authorization: localStorage.getItem("token"),
         },
       }
     );
     router.push(`/task/${response.data.id}`);
+  }
+
+  async function makePayment() {
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: publicKey!,
+        toPubkey: new PublicKey("4wRWn5Hr45fQcEdG5zEoy39AEiCNURoYHqKKAiugUP4p"),
+        lamports: 100000000,
+      })
+    );
+
+    const {
+      context: { slot: minContextSlot },
+      value: { blockhash, lastValidBlockHeight },
+    } = await connection.getLatestBlockhashAndContext();
+
+    const signature = await sendTransaction(transaction, connection, {
+      minContextSlot,
+    });
+
+    await connection.confirmTransaction({
+      blockhash,
+      lastValidBlockHeight,
+      signature,
+    });
+    setTxSignature(signature);
   }
   return (
     <div className="flex justify-center">
@@ -76,11 +104,11 @@ export const Upload = () => {
         </div>
         <div className="flex justify-center">
           <button
-            onClick={onSubmit}
+            onClick={txSignature ? onSubmit : makePayment}
             type="button"
             className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
           >
-            Submit Task
+            {txSignature ? "Submit Task" : "Pay 0.1 SOL"}
           </button>
         </div>
       </div>

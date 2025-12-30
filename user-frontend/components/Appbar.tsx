@@ -1,17 +1,24 @@
 "use client";
 import { BACKEND_URL } from "@/utils";
+import { useWallet } from "@solana/wallet-adapter-react";
+import {
+  WalletDisconnectButton,
+  WalletMultiButton,
+} from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useEffect } from "react";
 
 export const Appbar = () => {
-  const publicKey = "0x123123";
+  const { publicKey, signMessage } = useWallet();
 
   async function signAndSend() {
     if (!publicKey) {
       return;
     }
-    const message = new TextEncoder().encode("Sign into the matrix");
-    const signature = "xyx";
+    const message = new TextEncoder().encode(
+      "Sign into the matrix of labelling"
+    );
+    const signature = await signMessage?.(message);
     console.log(signature);
     console.log(publicKey);
     const response = await axios.post(`${BACKEND_URL}/v1/user/signin`, {
@@ -27,7 +34,9 @@ export const Appbar = () => {
   return (
     <div className="flex justify-between border-b pb-2 pt-2">
       <div className="text-2xl pl-4 flex justify-center pt-3">Matrix</div>
-      <div className="text-xl pr-4 pb-2">{publicKey ? "Hello" : "Bye"}</div>
+      <div className="text-xl pr-4 pb-2">
+        {publicKey ? <WalletDisconnectButton /> : <WalletMultiButton />}
+      </div>
     </div>
   );
 };
